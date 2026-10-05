@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThinkTank: Crowdsourcing Human Judgments for AI Reasoning Efficiency</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/night.min.css">
+    <style>
+        :root {
+            --r-background-color: #0a0a1a;
+            --r-main-font: 'Segoe UI', system-ui, sans-serif;
+            --r-heading-font: 'Segoe UI', system-ui, sans-serif;
+            --r-main-color: #e0e0e0;
+            --r-heading-color: #00f0ff;
+            --r-link-color: #ff00ff;
+        }
+        .reveal h1, .reveal h2 { color: #00f0ff; text-shadow: 0 0 20px rgba(0,240,255,0.3); }
+        .reveal h3 { color: #ff00ff; }
+        .reveal .highlight { color: #00ff88; font-weight: bold; }
+        .reveal .warning { color: #ff3366; }
+        .reveal .stat-box {
+            background: linear-gradient(135deg, rgba(0,240,255,0.1), rgba(168,85,247,0.1));
+            border: 1px solid rgba(0,240,255,0.3);
+            padding: 20px 30px;
+            margin: 10px;
+            display: inline-block;
+            border-radius: 8px;
+        }
+        .reveal .stat-number { font-size: 2.5em; color: #00f0ff; font-weight: bold; }
+        .reveal .stat-label { font-size: 0.9em; color: #888; }
+        .reveal .two-column { display: flex; gap: 40px; align-items: flex-start; }
+        .reveal .two-column > div { flex: 1; }
+        .reveal table { margin: 0 auto; border-collapse: collapse; }
+        .reveal table th { background: rgba(0,240,255,0.2); color: #00f0ff; padding: 12px 20px; }
+        .reveal table td { padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .reveal .citation { font-size: 0.6em; color: #666; margin-top: 20px; }
+        .reveal .game-demo {
+            background: rgba(20,20,40,0.8);
+            border: 2px solid #00f0ff;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+        }
+        .reveal .step {
+            background: rgba(0,240,255,0.05);
+            border-left: 3px solid #00f0ff;
+            padding: 5px 12px;
+            margin: 5px 0;
+            font-size: 0.65em;
+        }
+        .reveal .step.wasteful {
+            border-left-color: #ff3366;
+            background: rgba(255,51,102,0.1);
+        }
+        .reveal .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+        .reveal .flow-box {
+            background: rgba(168,85,247,0.2);
+            border: 1px solid #a855f7;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.7em;
+            white-space: nowrap;
+        }
+        .reveal .flow-arrow { color: #00f0ff; font-size: 1.2em; }
+        .reveal .conclusion-box {
+            background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,240,255,0.1));
+            border: 2px solid #00ff88;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        .reveal ul { text-align: left; }
+        .reveal li { margin: 15px 0; }
+        .title-slide h1 { font-size: 2em !important; }
+        .title-slide h2 { font-size: 1.2em !important; color: #a855f7 !important; }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Title Slide -->
+            <section class="title-slide">
+                <h1>ThinkTank</h1>
+                <h2>Crowdsourcing Human Judgments for AI Reasoning Efficiency</h2>
+                <br>
+                <p style="font-size: 0.9em;">
+                    <strong>Ha Le</strong><br>
+                    <span style="color: #888;">Advisor: Professor Di Wu</span><br>
+                    <span style="color: #666; font-size: 0.8em;">Unary Lab, ECE Department, UCF</span>
+                </p>
+                <p style="font-size: 0.7em; color: #555; margin-top: 40px;">February 12, 2026</p>
+            </section>
+
+            <!-- Problem Statement -->
+            <section>
+                <h2>The Problem</h2>
+                <h3 style="color: #ff3366; font-size: 0.9em;">AI Agents Waste Compute on Unnecessary Reasoning</h3>
+                <div class="game-demo">
+                    <p style="color: #a855f7; font-size: 0.7em; margin-bottom: 8px;">Question: What is 15% of 80?</p>
+                    <div class="step">Step 1: "I need to calculate 15% of 80..."</div>
+                    <div class="step wasteful">Step 2: "15% = 15/100 = 0.15" <span style="color:#ff3366">← Wasteful?</span></div>
+                    <div class="step wasteful">Step 3: "Let me verify: 15/100 = 0.15. Yes." <span style="color:#ff3366">← Wasteful?</span></div>
+                    <div class="step">Step 4: "0.15 × 80 = 12"</div>
+                    <div class="step wasteful">Step 5: "Let me double-check..." <span style="color:#ff3366">← Wasteful?</span></div>
+                    <div class="step">Step 6: "The answer is 12."</div>
+                </div>
+                <p class="citation">Insight from: Kim et al., "The Cost of Dynamic Reasoning" (2025)</p>
+            </section>
+
+            <!-- Research Gap -->
+            <section>
+                <h2>Research Gap</h2>
+                <br>
+                <table>
+                    <tr>
+                        <th>Challenge</th>
+                        <th>Current State</th>
+                    </tr>
+                    <tr>
+                        <td>Which steps are wasteful?</td>
+                        <td class="warning">No ground truth exists</td>
+                    </tr>
+                    <tr>
+                        <td>How to train PRMs?</td>
+                        <td class="warning">Need step-level labels</td>
+                    </tr>
+                    <tr>
+                        <td>Expert annotation?</td>
+                        <td class="warning">Expensive, doesn't scale</td>
+                    </tr>
+                </table>
+                <br>
+                <div class="conclusion-box">
+                    <strong class="highlight">Key Insight:</strong> Human consensus can create ground truth for reasoning efficiency
+                </div>
+            </section>
+
+            <!-- Solution: ThinkTank -->
+            <section>
+                <h2>Solution: ThinkTank GWAP</h2>
+                <p><em>Game With A Purpose</em> for crowdsourcing reasoning labels</p>
+                <br>
+                <div class="flow-diagram">
+                    <div class="flow-box">Players see<br>reasoning chains</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-box">Flag steps as<br>"wasteful"</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-box">Consensus<br>emerges</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-box">Training data<br>for PRMs</div>
+                </div>
+                <br><br>
+                <p style="font-size: 0.85em;">
+                    <span class="highlight">Inspiration:</span> Foldit (protein folding), ESP Game (image labeling), Galaxy Zoo (astronomy)
+                </p>
+            </section>
+
+            <!-- Platform Demo -->
+            <section>
+                <h2>Platform Overview</h2>
+                <div class="two-column">
+                    <div>
+                        <h3 style="font-size: 0.9em;">Game Modes</h3>
+                        <ul style="font-size: 0.75em;">
+                            <li><strong>Expert Calibration</strong><br>4 difficulty levels, progress tracking</li>
+                            <li><strong>Consensus Challenge</strong><br>Compare with community</li>
+                            <li><strong>Speed Trial</strong><br>60-second time attack</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 0.9em;">Gamification</h3>
+                        <ul style="font-size: 0.75em;">
+                            <li>Points & Leaderboard</li>
+                            <li>Level progression</li>
+                            <li>Real-time feedback</li>
+                            <li>Background music & effects</li>
+                        </ul>
+                    </div>
+                </div>
+                <br>
+                <p style="font-size: 0.8em;">
+                    <span class="highlight">Live at:</span>
+                    <a href="https://vanthienha199.github.io/thinktank/" style="color: #00f0ff;">vanthienha199.github.io/thinktank</a>
+                </p>
+            </section>
+
+            <!-- Results: Key Metrics -->
+            <section>
+                <h2>Pilot Results (6 Days)</h2>
+                <br>
+                <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                    <div class="stat-box">
+                        <div class="stat-number">19</div>
+                        <div class="stat-label">Users</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">206</div>
+                        <div class="stat-label">Judgments</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">82</div>
+                        <div class="stat-label">Chains</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">23s</div>
+                        <div class="stat-label">Avg Time</div>
+                    </div>
+                </div>
+                <br>
+                <div style="display: flex; justify-content: center; gap: 20px;">
+                    <div class="stat-box" style="border-color: #00ff88;">
+                        <div class="stat-number" style="color: #00ff88;">84</div>
+                        <div class="stat-label">High Consensus Steps (>70%)</div>
+                    </div>
+                    <div class="stat-box" style="border-color: #ff3366;">
+                        <div class="stat-number" style="color: #ff3366;">116</div>
+                        <div class="stat-label">Low Consensus Steps (<30%)</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Key Findings -->
+            <section>
+                <h2>Key Findings</h2>
+                <br>
+                <table style="font-size: 0.85em;">
+                    <tr>
+                        <th>Pattern</th>
+                        <th>Consensus</th>
+                        <th>Interpretation</th>
+                    </tr>
+                    <tr>
+                        <td>"Let me restate the problem..."</td>
+                        <td class="warning">>80%</td>
+                        <td>Consistently wasteful</td>
+                    </tr>
+                    <tr>
+                        <td>Verification on simple math</td>
+                        <td class="warning">>70%</td>
+                        <td>Usually wasteful</td>
+                    </tr>
+                    <tr>
+                        <td>Core calculations</td>
+                        <td class="highlight"><10%</td>
+                        <td>Consistently useful</td>
+                    </tr>
+                    <tr>
+                        <td>Final answer statement</td>
+                        <td class="highlight"><5%</td>
+                        <td>Never wasteful</td>
+                    </tr>
+                </table>
+                <br>
+                <p style="font-size: 0.8em; color: #888;">
+                    <strong class="highlight">200 steps</strong> now have high-confidence labels (84 wasteful + 116 useful)
+                </p>
+            </section>
+
+            <!-- User Engagement -->
+            <section>
+                <h2>User Engagement</h2>
+                <br>
+                <div class="two-column">
+                    <div>
+                        <h3 style="font-size: 0.9em;">Top Players</h3>
+                        <table style="font-size: 0.75em;">
+                            <tr><th>User</th><th>Points</th><th>Level</th></tr>
+                            <tr><td>Hhf</td><td>144</td><td>Master</td></tr>
+                            <tr><td>Vợ Anh</td><td>126</td><td>Master</td></tr>
+                            <tr><td>AnhThu</td><td>98</td><td>Master</td></tr>
+                            <tr><td>thuta</td><td>58</td><td>Master</td></tr>
+                            <tr><td>Skibidi Geo</td><td>50</td><td>Master</td></tr>
+                        </table>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 0.9em;">Engagement Metrics</h3>
+                        <ul style="font-size: 0.75em;">
+                            <li><strong class="highlight">Top 3 users:</strong> 62% of judgments</li>
+                            <li><strong class="highlight">7 users</strong> reached Master level</li>
+                            <li><strong class="highlight">23 sec avg</strong> per judgment<br>(users reading, not skipping)</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Research Applications -->
+            <section>
+                <h2>Research Applications</h2>
+                <br>
+                <div class="flow-diagram" style="flex-direction: column; gap: 25px;">
+                    <div class="flow-box" style="width: 80%;">
+                        <strong class="highlight">1. PRM Training Data</strong><br>
+                        High-consensus labels → Train reward models to prefer efficient reasoning
+                    </div>
+                    <div class="flow-box" style="width: 80%;">
+                        <strong class="highlight">2. Compute Optimization</strong><br>
+                        Identify wasteful patterns → Prune unnecessary reasoning at inference
+                    </div>
+                    <div class="flow-box" style="width: 80%;">
+                        <strong class="highlight">3. Living Benchmark</strong><br>
+                        Continuous human feedback → Dynamic evaluation of reasoning efficiency
+                    </div>
+                </div>
+            </section>
+
+            <!-- Next Steps -->
+            <section>
+                <h2>Next Steps</h2>
+                <br>
+                <div class="two-column">
+                    <div>
+                        <h3 style="font-size: 0.9em; color: #00ff88;">Short-term</h3>
+                        <ul style="font-size: 0.8em;">
+                            <li>Scale to 50+ users</li>
+                            <li>Add real LLM outputs<br>(GPT-4, Claude chains)</li>
+                            <li>Calculate Fleiss' Kappa</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 0.9em; color: #a855f7;">Long-term</h3>
+                        <ul style="font-size: 0.8em;">
+                            <li>Publish dataset on HuggingFace</li>
+                            <li>Pilot PRM training experiments</li>
+                            <li>Workshop paper submission</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Conclusion -->
+            <section>
+                <h2>Conclusion</h2>
+                <br>
+                <div class="conclusion-box">
+                    <p style="font-size: 1.1em;">
+                        ThinkTank demonstrates that <strong class="highlight">gamification</strong> can effectively
+                        crowdsource <strong class="highlight">step-level reasoning labels</strong> from non-experts.
+                    </p>
+                    <br>
+                    <p style="font-size: 0.9em; color: #888;">
+                        In 6 days: 19 users, 206 judgments, 200 high-confidence step labels
+                    </p>
+                </div>
+                <br>
+                <p style="font-size: 1em;">
+                    <span class="highlight">Live Demo:</span>
+                    <a href="https://vanthienha199.github.io/thinktank/" style="color: #00f0ff;">vanthienha199.github.io/thinktank</a>
+                </p>
+                <br>
+                <p style="font-size: 0.8em; color: #666;">
+                    Thank you! Questions?
+                </p>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: true,
+            transition: 'slide',
+            backgroundTransition: 'fade',
+            center: true,
+            width: 1200,
+            height: 700,
+            margin: 0.1,
+        });
+    </script>
+</body>
+</html>

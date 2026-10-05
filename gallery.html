@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThinkTank - UI Gallery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .logo-img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+        .flow-icon-img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+        .screen-preview-img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0f;
+            min-height: 100vh;
+            padding: 40px;
+            color: #e0e0e0;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 1;
+        }
+        .logo {
+            font-size: 70px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.5));
+            animation: pulse 3s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 42px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00f0ff 0%, #ff00ff 50%, #00f0ff 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+            margin-bottom: 10px;
+            letter-spacing: 4px;
+        }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .subtitle {
+            font-size: 18px;
+            color: #888;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        .demo-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 240, 255, 0.2) 100%);
+            border: 1px solid rgba(0, 255, 136, 0.4);
+            padding: 12px 28px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: #00ff88;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .flow-section {
+            max-width: 1400px;
+            margin: 0 auto 50px;
+            position: relative;
+            z-index: 1;
+        }
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: #00f0ff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(0, 240, 255, 0.3), transparent);
+        }
+        .screens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        .screen-card {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+        .screen-card:hover {
+            border-color: rgba(0, 240, 255, 0.5);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+            transform: translateY(-5px);
+        }
+        .screen-preview {
+            background: #0a0a0f;
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 50px;
+            position: relative;
+            overflow: hidden;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .screen-preview::after {
+            content: 'VIEW';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 240, 255, 0.9), transparent);
+            padding: 30px 10px 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .screen-card:hover .screen-preview::after {
+            opacity: 1;
+        }
+        .screen-number {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.3) 0%, rgba(168, 85, 247, 0.3) 100%);
+            border: 1px solid rgba(255, 0, 255, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            color: #ff00ff;
+        }
+        .screen-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+        .screen-desc {
+            font-size: 14px;
+            color: #777;
+        }
+        .user-flow {
+            max-width: 1000px;
+            margin: 0 auto 50px;
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(255, 0, 255, 0.2);
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+        }
+        .user-flow::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff00ff, #00f0ff, #ff00ff);
+        }
+        .flow-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #ff00ff;
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 3px;
+            text-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+        }
+        .flow-diagram {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        .flow-step {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            padding: 12px 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            color: #00f0ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 1px;
+        }
+        .flow-arrow {
+            color: #ff00ff;
+            font-size: 20px;
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+        }
+        .quick-start {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .quick-start-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        .quick-start-desc {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 25px;
+        }
+        .start-demo-btn {
+            display: inline-block;
+            background: transparent;
+            border: 2px solid #00f0ff;
+            color: #00f0ff;
+            text-decoration: none;
+            padding: 18px 50px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+        .start-demo-btn:hover {
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.5);
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.8);
+        }
+        .reset-btn {
+            display: inline-block;
+            margin-top: 20px;
+            color: #555;
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+        .reset-btn:hover {
+            color: #ff3366;
+        }
+        .tech-info {
+            max-width: 800px;
+            margin: 50px auto 0;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .tech-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+        .tech-badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .tech-badge {
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 8px 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            color: #a855f7;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><img src="assets/images/Brain.png" alt="ThinkTank" class="logo-img"></div>
+        <h1 class="title">THINKTANK</h1>
+        <p class="subtitle">Interactive Demo // Full User Journey</p>
+        <div class="demo-badge">// Fully Functional Demo</div>
+    </div>
+
+    <div class="user-flow">
+        <div class="flow-title">// USER FLOW</div>
+        <div class="flow-diagram">
+            <div class="flow-step"><img src="assets/images/Lightning-bolt.png" alt="Splash" class="flow-icon-img"> Splash</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step"><img src="assets/images/Research.png" alt="Onboarding" class="flow-icon-img"> Onboarding</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step"><img src="assets/images/User-silhouette.png" alt="Sign Up" class="flow-icon-img"> Sign Up</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step"><img src="assets/images/Home.png" alt="Home" class="flow-icon-img"> Home</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step"><img src="assets/images/Graduation-cap.png" alt="Levels" class="flow-icon-img"> Levels</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step"><img src="assets/images/Target.png" alt="Gameplay" class="flow-icon-img"> Gameplay</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step"><img src="assets/images/Celebration.png" alt="Result" class="flow-icon-img"> Result</div>
+        </div>
+    </div>
+
+    <div class="quick-start">
+        <h2 class="quick-start-title">// Initialize Demo</h2>
+        <p class="quick-start-desc">Experience the complete user journey from splash screen to gameplay. All systems operational.</p>
+        <a href="index.html" class="start-demo-btn">[ Launch Demo ]</a>
+        <br>
+        <span class="reset-btn" onclick="resetDemo()">Reset Demo Data</span>
+    </div>
+
+    <div class="flow-section">
+        <div class="section-title">// Core Flow</div>
+        <div class="screens-grid">
+            <a href="index.html" class="screen-card">
+                <div class="screen-preview">
+                    <span class="screen-number">01</span>
+                    <img src="assets/images/Lightning-bolt.png" alt="Splash" class="screen-preview-img">
+                </div>
+                <div class="screen-title">SPLASH</div>
+                <div class="screen-desc">Entry point & branding</div>
+            </a>
+
+            <a href="onboarding.html" class="screen-card">
+                <div class="screen-preview">
+                    <span class="screen-number">02</span>
+                    <img src="assets/images/Research.png" alt="Onboarding" class="screen-preview-img">
+                </div>
+                <div class="screen-title">ONBOARDING</div>
+                <div class="screen-desc">3-slide tutorial</div>
+            </a>
+
+            <a href="signup.html" class="screen-card">
+                <div class="screen-preview">
+                    <span class="screen-number">03</span>
+                    <img src="assets/images/User-silhouette.png" alt="Sign Up" class="screen-preview-img">
+                </div>
+                <div class="screen-title">SIGN UP</div>
+                <div class="screen-desc">Create neural identity</div>
+            </a>
+
+            <a href="home.html" class="screen-card">
+                <div class="screen-preview">
+                    <span class="screen-number">04</span>
+                    <img src="assets/images/Home.png" alt="Home" class="screen-preview-img">
+                </div>
+                <div class="screen-title">HOME</div>
+                <div class="screen-desc">Main dashboard hub</div>
+            </a>
+
+            <a href="levels.html" class="screen-card">
+                <div class="screen-preview">
+                    <span class="screen-number">05</span>
+                    <img src="assets/images/Graduation-cap.png" alt="Levels" class="screen-preview-img">
+                </div>
+                <div class="screen-title">LEVELS</div>
+                <div class="screen-desc">Difficulty selection</div>
+            </a>
+
+            <a href="gameplay.html" class="screen-card">
+                <div class="screen-preview">
+                    <span class="screen-number">06</span>
+                    <img src="assets/images/Target.png" alt="Gameplay" class="screen-preview-img">
+                </div>
+                <div class="screen-title">GAMEPLAY</div>
+                <div class="screen-desc">Core analysis interface</div>
+            </a>
+
+            <a href="result.html" class="screen-card">
+                <div class="screen-preview">
+                    <span class="screen-number">07</span>
+                    <img src="assets/images/Celebration.png" alt="Result" class="screen-preview-img">
+                </div>
+                <div class="screen-title">RESULT</div>
+                <div class="screen-desc">Credits & level unlock</div>
+            </a>
+        </div>
+    </div>
+
+    <div class="flow-section">
+        <div class="section-title">// Minigames</div>
+        <div class="screens-grid">
+            <a href="consensus.html" class="screen-card">
+                <div class="screen-preview">
+                    <span class="screen-number">A</span>
+                    <img src="assets/images/Target.png" alt="Consensus" class="screen-preview-img">
+                </div>
+                <div class="screen-title">CONSENSUS</div>
+                <div class="screen-desc">Match community votes</div>
+            </a>
+
+            <a href="speed.html" class="screen-card">
+                <div class="screen-preview">
+                    <span class="screen-number">B</span>
+                    <img src="assets/images/Lightning-bolt.png" alt="Speed" class="screen-preview-img">
+                </div>
+                <div class="screen-title">SPEED TRIAL</div>
+                <div class="screen-desc">60-second challenge</div>
+            </a>
+        </div>
+    </div>
+
+    <div class="flow-section">
+        <div class="section-title">// Other Screens</div>
+        <div class="screens-grid">
+            <a href="leaderboard.html" class="screen-card">
+                <div class="screen-preview">
+                    <span class="screen-number">08</span>
+                    <img src="assets/images/Trophy.png" alt="Leaderboard" class="screen-preview-img">
+                </div>
+                <div class="screen-title">LEADERBOARD</div>
+                <div class="screen-desc">Global rankings</div>
+            </a>
+
+            <a href="profile.html" class="screen-card">
+                <div class="screen-preview">
+                    <span class="screen-number">09</span>
+                    <img src="assets/images/User-silhouette.png" alt="Profile" class="screen-preview-img">
+                </div>
+                <div class="screen-title">PROFILE</div>
+                <div class="screen-desc">User stats & progress</div>
+            </a>
+        </div>
+    </div>
+
+    <div class="tech-info">
+        <div class="tech-title">// Built With</div>
+        <div class="tech-badges">
+            <span class="tech-badge">HTML5</span>
+            <span class="tech-badge">CSS3</span>
+            <span class="tech-badge">VANILLA JS</span>
+            <span class="tech-badge">LOCALSTORAGE</span>
+            <span class="tech-badge">NO DEPS</span>
+        </div>
+    </div>
+
+    <script>
+        function resetDemo() {
+            if (confirm('Reset all demo data? This will clear your progress.')) {
+                localStorage.removeItem('thinktank_user');
+                localStorage.removeItem('thinktank_current_level');
+                localStorage.removeItem('thinktank_last_result');
+                localStorage.removeItem('thinktank_speed_best');
+                alert('Demo data cleared. Initialize from splash screen.');
+            }
+        }
+    </script>
+</body>
+</html>

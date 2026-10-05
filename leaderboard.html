@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThinkTank - Leaderboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/audio.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .icon-img {
+            width: 1em;
+            height: 1em;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+        .logo-img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            vertical-align: middle;
+            margin-top: 4px;
+        }
+        .nav-icon-img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            vertical-align: middle;
+            margin-top: 3px;
+        }
+        .crown-img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+        .top-avatar-img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+        }
+        .top-avatar-img.first {
+            width: 44px;
+            height: 44px;
+        }
+        .player-avatar-img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+        }
+        .your-avatar-img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+        }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0f;
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .desktop-header { display: none; }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            padding-bottom: 100px;
+            max-width: 700px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .page-header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(240, 255, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        .page-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: #f0ff00;
+            text-shadow: 0 0 20px rgba(240, 255, 0, 0.5);
+            letter-spacing: 3px;
+        }
+        .page-subtitle {
+            font-size: 15px;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        /* Top 3 - Horizontal Layout */
+        .top-three {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 15px;
+            margin-bottom: 30px;
+            height: 220px;
+        }
+        .top-player {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100px;
+        }
+        .top-player.first { order: 2; }
+        .top-player.second { order: 1; }
+        .top-player.third { order: 3; }
+
+        .player-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 10px;
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid;
+            width: 100%;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .top-player.first .player-card {
+            border-color: rgba(240, 255, 0, 0.5);
+            background: linear-gradient(180deg, rgba(240, 255, 0, 0.15) 0%, rgba(20, 20, 30, 0.8) 100%);
+            box-shadow: 0 0 30px rgba(240, 255, 0, 0.2);
+        }
+        .top-player.second .player-card {
+            border-color: rgba(0, 240, 255, 0.5);
+            background: linear-gradient(180deg, rgba(0, 240, 255, 0.1) 0%, rgba(20, 20, 30, 0.8) 100%);
+        }
+        .top-player.third .player-card {
+            border-color: rgba(255, 0, 255, 0.5);
+            background: linear-gradient(180deg, rgba(255, 0, 255, 0.1) 0%, rgba(20, 20, 30, 0.8) 100%);
+        }
+
+        .rank-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .top-player.first .rank-number { color: #f0ff00; text-shadow: 0 0 10px rgba(240, 255, 0, 0.8); }
+        .top-player.second .rank-number { color: #00f0ff; }
+        .top-player.third .rank-number { color: #ff00ff; }
+
+        .crown { font-size: 20px; margin-bottom: 5px; }
+
+        .top-avatar {
+            font-size: 36px;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+        .top-player.first .top-avatar {
+            font-size: 44px;
+            filter: drop-shadow(0 0 15px rgba(240, 255, 0, 0.5));
+        }
+
+        .top-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .top-points {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .top-player.first .top-points { color: #f0ff00; }
+        .top-player.second .top-points { color: #00f0ff; }
+        .top-player.third .top-points { color: #ff00ff; }
+
+        /* Podium Base */
+        .podium-base {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .top-player.first .podium-base {
+            height: 60px;
+            background: linear-gradient(180deg, rgba(240, 255, 0, 0.3) 0%, rgba(240, 255, 0, 0.1) 100%);
+            border: 1px solid rgba(240, 255, 0, 0.3);
+            border-bottom: 3px solid #f0ff00;
+        }
+        .top-player.second .podium-base {
+            height: 40px;
+            background: linear-gradient(180deg, rgba(0, 240, 255, 0.2) 0%, rgba(0, 240, 255, 0.1) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-bottom: 3px solid #00f0ff;
+        }
+        .top-player.third .podium-base {
+            height: 25px;
+            background: linear-gradient(180deg, rgba(255, 0, 255, 0.2) 0%, rgba(255, 0, 255, 0.1) 100%);
+            border: 1px solid rgba(255, 0, 255, 0.3);
+            border-bottom: 3px solid #ff00ff;
+        }
+
+        /* Leaderboard List */
+        .leaderboard-list {
+            background: rgba(15, 15, 20, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+        .list-header {
+            display: flex;
+            padding: 12px 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            color: #00f0ff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            background: rgba(0, 240, 255, 0.05);
+        }
+        .list-header .rank { width: 50px; }
+        .list-header .player { flex: 1; }
+        .list-header .points { width: 80px; text-align: right; }
+
+        .player-row {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s;
+        }
+        .player-row:hover {
+            background: rgba(0, 240, 255, 0.05);
+        }
+        .player-row.current-user {
+            background: rgba(255, 0, 255, 0.1);
+            border-left: 3px solid #ff00ff;
+            box-shadow: inset 0 0 30px rgba(255, 0, 255, 0.1);
+        }
+        .player-rank {
+            width: 50px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+        }
+        .player-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .player-avatar { font-size: 28px; }
+        .player-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .player-level {
+            font-size: 13px;
+            color: #777;
+        }
+        .player-points {
+            width: 80px;
+            text-align: right;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #00f0ff;
+        }
+
+        /* Your Rank Card */
+        .your-rank-card {
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.15) 0%, rgba(0, 240, 255, 0.1) 100%);
+            border: 1px solid rgba(255, 0, 255, 0.3);
+            padding: 16px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+        .your-rank-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .your-avatar { font-size: 36px; }
+        .your-label {
+            font-size: 11px;
+            color: #ff00ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .your-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .your-rank { text-align: right; }
+        .your-rank-label {
+            font-size: 11px;
+            color: #00f0ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .your-rank-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #00f0ff;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 15, 0.95);
+            border-top: 1px solid rgba(0, 240, 255, 0.2);
+            padding: 12px 30px 25px;
+            display: flex;
+            justify-content: space-around;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+        }
+        .nav-icon {
+            font-size: 24px;
+            opacity: 0.4;
+        }
+        .nav-item.active .nav-icon {
+            opacity: 1;
+            filter: drop-shadow(0 0 10px rgba(240, 255, 0, 0.8));
+        }
+        .nav-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .nav-item.active .nav-label {
+            color: #f0ff00;
+            text-shadow: 0 0 10px rgba(240, 255, 0, 0.5);
+        }
+
+        /* Desktop */
+        @media (min-width: 768px) {
+            .app-container { flex-direction: row; }
+            .desktop-header {
+                display: flex;
+                flex-direction: column;
+                width: 280px;
+                min-height: 100vh;
+                background: rgba(15, 15, 20, 0.95);
+                border-right: 1px solid rgba(0, 240, 255, 0.1);
+                padding: 30px 20px;
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+            }
+            .desktop-logo {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 40px;
+            }
+            .desktop-logo .logo { font-size: 36px; }
+            .desktop-logo .app-name {
+                font-family: 'Orbitron', sans-serif;
+                font-size: 20px;
+                font-weight: 700;
+                color: #00f0ff;
+                letter-spacing: 2px;
+            }
+            .desktop-nav {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .desktop-nav-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 14px 16px;
+                text-decoration: none;
+                color: #666;
+                font-size: 14px;
+                transition: all 0.3s;
+                border: 1px solid transparent;
+            }
+            .desktop-nav-item:hover {
+                background: rgba(0, 240, 255, 0.05);
+                border-color: rgba(0, 240, 255, 0.2);
+                color: #00f0ff;
+            }
+            .desktop-nav-item.active {
+                background: rgba(240, 255, 0, 0.1);
+                border-color: rgba(240, 255, 0, 0.3);
+                color: #f0ff00;
+            }
+            .desktop-nav-item .nav-icon {
+                font-size: 20px;
+                opacity: 1;
+            }
+            .nav-section-label {
+                font-family: 'Orbitron', sans-serif;
+                font-size: 9px;
+                font-weight: 600;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                padding: 12px 16px 6px;
+                margin-top: 8px;
+            }
+            .desktop-nav-item.main-game-item {
+                background: rgba(255, 0, 255, 0.08);
+                border-color: rgba(255, 0, 255, 0.25);
+            }
+            .desktop-nav-item.main-game-item:hover {
+                background: rgba(255, 0, 255, 0.15);
+                border-color: rgba(255, 0, 255, 0.4);
+                color: #ff00ff;
+            }
+            .main-content {
+                margin-left: 280px;
+                padding: 40px;
+                padding-bottom: 40px;
+                max-width: 900px;
+            }
+            .bottom-nav { display: none; }
+            .top-player { width: 130px; }
+            .top-player.first .top-avatar { font-size: 50px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="desktop-header">
+            <div class="desktop-logo">
+                <span class="logo"><img src="assets/images/Brain.png" alt="ThinkTank" class="logo-img"></span>
+                <span class="app-name">THINKTANK</span>
+            </div>
+            <nav class="desktop-nav">
+                <a href="home.html" class="desktop-nav-item">
+                    <span class="nav-icon"><img src="assets/images/Home.png" alt="Home" class="nav-icon-img"></span>
+                    <span>Home</span>
+                </a>
+                <div class="nav-section-label">Main Game</div>
+                <a href="levels.html" class="desktop-nav-item main-game-item">
+                    <span class="nav-icon"><img src="assets/images/Graduation-cap.png" alt="Calibration" class="nav-icon-img"></span>
+                    <span>Expert Calibration</span>
+                </a>
+                <div class="nav-section-label">Mini-Games</div>
+                <a href="consensus.html" class="desktop-nav-item">
+                    <span class="nav-icon"><img src="assets/images/Target.png" alt="Consensus" class="nav-icon-img"></span>
+                    <span>Consensus</span>
+                </a>
+                <a href="speed.html" class="desktop-nav-item">
+                    <span class="nav-icon"><img src="assets/images/Lightning-bolt.png" alt="Speed" class="nav-icon-img"></span>
+                    <span>Speed Trial</span>
+                </a>
+                <div class="nav-section-label" style="margin-top: 10px;">Stats</div>
+                <a href="leaderboard.html" class="desktop-nav-item active">
+                    <span class="nav-icon"><img src="assets/images/Trophy.png" alt="Leaderboard" class="nav-icon-img"></span>
+                    <span>Leaderboard</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">// LEADERBOARD</h1>
+                <p class="page-subtitle">Top Neural Experts</p>
+            </div>
+
+            <div class="top-three" id="topThree">
+                <!-- Dynamically populated -->
+            </div>
+
+            <div class="leaderboard-list">
+                <div class="list-header">
+                    <span class="rank">Rank</span>
+                    <span class="player">Player</span>
+                    <span class="points">Points</span>
+                </div>
+                <div id="leaderboardRows">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <div class="your-rank-card">
+                <div class="your-rank-info">
+                    <span class="your-avatar" id="yourAvatar"><img src="assets/images/Avatar1.png" alt="Avatar" class="your-avatar-img" id="yourAvatarImg"></span>
+                    <div>
+                        <div class="your-label">// Your Position</div>
+                        <div class="your-name" id="yourName">Player</div>
+                    </div>
+                </div>
+                <div class="your-rank">
+                    <div class="your-rank-label">Global Rank</div>
+                    <div class="your-rank-value" id="yourRank">#--</div>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="home.html" class="nav-item">
+                <span class="nav-icon"><img src="assets/images/Home.png" alt="Home" class="nav-icon-img"></span>
+                <span class="nav-label">Home</span>
+            </a>
+            <a href="leaderboard.html" class="nav-item active">
+                <span class="nav-icon"><img src="assets/images/Trophy.png" alt="Ranks" class="nav-icon-img"></span>
+                <span class="nav-label">Ranks</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <span class="nav-icon"><img src="assets/images/User-silhouette.png" alt="Profile" class="nav-icon-img"></span>
+                <span class="nav-label">Profile</span>
+            </a>
+        </nav>
+    </div>
+
+    <script>
+        // Security: Escape HTML to prevent XSS attacks
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getAvatarImage(avatar) {
+            if (avatar && avatar.endsWith('.png')) return avatar;
+            const emojiMap = {
+                '🐱': 'assets/images/Avatar1.png', '🐶': 'assets/images/Avatar2.png', '🦊': 'assets/images/Avatar3.png',
+                '🐼': 'assets/images/Avatar4.png', '🦁': 'assets/images/Avatar5.png', '🐸': 'assets/images/Avatar6.png',
+                '🦉': 'assets/images/Avatar7.png', '🤖': 'assets/images/Avatar8.png', '👽': 'assets/images/Avatar9.png', '🧠': 'assets/images/Avatar1.png'
+            };
+            return emojiMap[avatar] || 'assets/images/Avatar1.png';
+        }
+
+        const levelNames = { novice: 'Novice', apprentice: 'Apprentice', expert: 'Expert', master: 'Master' };
+        const levelImages = {
+            novice: 'assets/images/Novice.png', apprentice: 'assets/images/Apprentice.png',
+            expert: 'assets/images/Expert.png', master: 'assets/images/Master.png'
+        };
+
+        function renderTopThree(players, currentUsername) {
+            const topThree = document.getElementById('topThree');
+            if (players.length === 0) {
+                topThree.innerHTML = '<p style="color:#666;text-align:center;padding:40px;">No players yet. Be the first!</p>';
+                return;
+            }
+
+            // Handle 1, 2, or 3+ players
+            const positions = ['second', 'first', 'third'];
+            let displayOrder = [];
+
+            if (players.length === 1) {
+                // Only show first place in center
+                displayOrder = [null, players[0], null];
+            } else if (players.length === 2) {
+                // Show first and second
+                displayOrder = [players[1], players[0], null];
+            } else {
+                // Normal: 2nd, 1st, 3rd
+                displayOrder = [players[1], players[0], players[2]];
+            }
+
+            topThree.innerHTML = displayOrder.map((p, i) => {
+                if (!p) return ''; // Skip empty positions
+                const pos = positions[i];
+                const rank = pos === 'first' ? 1 : pos === 'second' ? 2 : 3;
+                const isYou = p.username === currentUsername;
+                const avatar = getAvatarImage(p.avatar_url);
+                const crown = pos === 'first' ? '<div class="crown"><img src="assets/images/Crown.png" alt="Crown" class="crown-img"></div>' : '';
+                return `
+                    <div class="top-player ${pos}">
+                        <div class="player-card" ${isYou ? 'style="border-color:#00f0ff;"' : ''}>
+                            ${crown}
+                            <div class="rank-number">#${rank}</div>
+                            <div class="top-avatar"><img src="${avatar}" alt="Avatar" class="top-avatar-img ${pos === 'first' ? 'first' : ''}"></div>
+                            <div class="top-name">${escapeHtml(p.username)}${isYou ? ' (You)' : ''}</div>
+                            <div class="top-points">${p.points.toLocaleString()}</div>
+                        </div>
+                        <div class="podium-base"></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderLeaderboardRows(players, currentUsername) {
+            const container = document.getElementById('leaderboardRows');
+            // Show players from rank 4 onwards, plus current user if not in top
+            const rowsHtml = players.slice(3).map((p, i) => {
+                const rank = i + 4;
+                const isYou = p.username === currentUsername;
+                const avatar = getAvatarImage(p.avatar_url);
+                const level = p.highest_level || 'novice';
+                return `
+                    <div class="player-row ${isYou ? 'current-user' : ''}">
+                        <div class="player-rank">#${rank}</div>
+                        <div class="player-info">
+                            <span class="player-avatar"><img src="${avatar}" alt="Avatar" class="player-avatar-img"></span>
+                            <div>
+                                <div class="player-name">${escapeHtml(p.username)}${isYou ? ' (You)' : ''}</div>
+                                <div class="player-level"><img src="${levelImages[level]}" alt="${level}" style="width:14px;height:14px;vertical-align:middle;"> ${levelNames[level]}</div>
+                            </div>
+                        </div>
+                        <div class="player-points">${p.points.toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+            container.innerHTML = rowsHtml || '<p style="color:#666;text-align:center;padding:20px;">No other players yet</p>';
+        }
+
+        async function loadLeaderboard() {
+            await ThinkTankApp.init();
+            console.log('ThinkTank mode:', ThinkTankApp.mode);
+
+            const profile = await ThinkTankApp.getProfile();
+            console.log('Profile:', profile);
+
+            if (!profile) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const username = profile.username;
+            const avatarImg = getAvatarImage(profile.avatar_url || profile.avatar);
+            const highestLevel = profile.highest_level || profile.highestLevel || 'novice';
+
+            // Get leaderboard data from Supabase
+            const leaderboard = await ThinkTankApp.getLeaderboard(100);
+            console.log('Leaderboard data:', leaderboard);
+
+            // Find user's rank
+            let userRank = leaderboard.findIndex(p => p.username === username) + 1;
+            if (userRank === 0) userRank = leaderboard.length + 1;
+
+            // Render top 3
+            renderTopThree(leaderboard, username);
+
+            // Render rest of leaderboard
+            renderLeaderboardRows(leaderboard, username);
+
+            // Update "Your Position" card at bottom
+            document.getElementById('yourAvatarImg').src = avatarImg;
+            document.getElementById('yourName').textContent = username;
+            document.getElementById('yourRank').textContent = '#' + userRank;
+        }
+        loadLeaderboard();
+    </script>
+</body>
+</html>

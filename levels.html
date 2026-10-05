@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThinkTank - Select Level</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/audio.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .icon-img {
+            width: 1em;
+            height: 1em;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+        .logo-img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            vertical-align: middle;
+            margin-top: 4px;
+        }
+        .nav-icon-img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            vertical-align: middle;
+            margin-top: 3px;
+        }
+        .level-icon-img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+        }
+        .lock-icon-img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+        }
+        .back-icon-img {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+        }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0f;
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .desktop-header { display: none; }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            padding-bottom: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+        }
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+        .back-btn:hover {
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        .page-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #ff00ff;
+            text-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+            letter-spacing: 2px;
+        }
+        .intro-text {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        /* Level Cards */
+        .levels-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .level-card {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+        .level-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.5), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .level-card:hover:not(.locked)::before {
+            opacity: 1;
+        }
+        .level-card:hover:not(.locked) {
+            border-color: rgba(0, 240, 255, 0.5);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+        }
+        .level-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .level-card.current {
+            border-color: rgba(0, 255, 136, 0.5);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(20, 20, 30, 0.8) 100%);
+        }
+        .level-card.current::before {
+            opacity: 1;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+        }
+        .level-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+        .level-icon {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .level-icon.novice {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.3) 0%, rgba(0, 255, 136, 0.1) 100%);
+            border: 1px solid rgba(0, 255, 136, 0.5);
+        }
+        .level-icon.apprentice {
+            background: linear-gradient(135deg, rgba(240, 255, 0, 0.3) 0%, rgba(240, 255, 0, 0.1) 100%);
+            border: 1px solid rgba(240, 255, 0, 0.5);
+        }
+        .level-icon.expert {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.3) 0%, rgba(0, 240, 255, 0.1) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.5);
+        }
+        .level-icon.master {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0.1) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+        }
+        .level-icon.locked {
+            background: rgba(50, 50, 60, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .level-info { flex: 1; }
+        .level-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 1px;
+        }
+        .current-badge {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid rgba(0, 255, 136, 0.4);
+            color: #00ff88;
+            padding: 3px 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .level-subtitle {
+            font-size: 14px;
+            color: #777;
+        }
+        .level-points {
+            text-align: right;
+        }
+        .points-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            color: #f0ff00;
+            text-shadow: 0 0 10px rgba(240, 255, 0, 0.5);
+        }
+        .points-label {
+            font-size: 10px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .level-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .progress-bar {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+        .progress-fill.novice { background: linear-gradient(90deg, #00ff88, #00f0ff); box-shadow: 0 0 10px rgba(0, 255, 136, 0.5); }
+        .progress-fill.apprentice { background: linear-gradient(90deg, #f0ff00, #00f0ff); box-shadow: 0 0 10px rgba(240, 255, 0, 0.5); }
+        .progress-fill.expert { background: linear-gradient(90deg, #00f0ff, #ff00ff); box-shadow: 0 0 10px rgba(0, 240, 255, 0.5); }
+        .progress-fill.master { background: linear-gradient(90deg, #a855f7, #ff00ff); box-shadow: 0 0 10px rgba(168, 85, 247, 0.5); }
+        .progress-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            color: #666;
+            white-space: nowrap;
+        }
+        .lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 15, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .lock-content { text-align: center; }
+        .lock-icon {
+            font-size: 30px;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 0 10px rgba(255, 0, 255, 0.5));
+        }
+        .lock-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            color: #888;
+            letter-spacing: 1px;
+        }
+        .level-desc {
+            font-size: 14px;
+            color: #777;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        /* Desktop */
+        @media (min-width: 768px) {
+            .app-container { flex-direction: row; }
+            .desktop-header {
+                display: flex;
+                flex-direction: column;
+                width: 280px;
+                min-height: 100vh;
+                background: rgba(15, 15, 20, 0.95);
+                border-right: 1px solid rgba(0, 240, 255, 0.1);
+                padding: 30px 20px;
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+            }
+            .desktop-logo {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 40px;
+            }
+            .desktop-logo .logo { font-size: 36px; filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.5)); }
+            .desktop-logo .app-name {
+                font-family: 'Orbitron', sans-serif;
+                font-size: 20px;
+                font-weight: 700;
+                color: #00f0ff;
+                letter-spacing: 2px;
+                text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            }
+            .desktop-nav {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .desktop-nav-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 14px 16px;
+                text-decoration: none;
+                color: #666;
+                font-size: 14px;
+                transition: all 0.3s;
+                border: 1px solid transparent;
+            }
+            .desktop-nav-item:hover {
+                background: rgba(0, 240, 255, 0.05);
+                border-color: rgba(0, 240, 255, 0.2);
+                color: #00f0ff;
+            }
+            .desktop-nav-item.active {
+                background: rgba(255, 0, 255, 0.1);
+                border-color: rgba(255, 0, 255, 0.3);
+                color: #ff00ff;
+            }
+            .desktop-nav-item .nav-icon {
+                font-size: 20px;
+                opacity: 1;
+            }
+            .nav-section-label {
+                font-family: 'Orbitron', sans-serif;
+                font-size: 9px;
+                font-weight: 600;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                padding: 12px 16px 6px;
+                margin-top: 8px;
+            }
+            .desktop-nav-item.main-game-item {
+                background: rgba(255, 0, 255, 0.08);
+                border-color: rgba(255, 0, 255, 0.25);
+            }
+            .desktop-nav-item.main-game-item:hover,
+            .desktop-nav-item.main-game-item.active {
+                background: rgba(255, 0, 255, 0.15);
+                border-color: rgba(255, 0, 255, 0.4);
+                color: #ff00ff;
+            }
+            .main-content {
+                margin-left: 280px;
+                padding: 40px;
+                max-width: 1000px;
+            }
+            .page-header { display: none; }
+            .levels-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+            .level-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Desktop Sidebar -->
+        <aside class="desktop-header">
+            <div class="desktop-logo">
+                <span class="logo"><img src="assets/images/Brain.png" alt="ThinkTank" class="logo-img"></span>
+                <span class="app-name">THINKTANK</span>
+            </div>
+            <nav class="desktop-nav">
+                <a href="home.html" class="desktop-nav-item">
+                    <span class="nav-icon"><img src="assets/images/Home.png" alt="Home" class="nav-icon-img"></span>
+                    <span>Home</span>
+                </a>
+                <div class="nav-section-label">Main Game</div>
+                <a href="levels.html" class="desktop-nav-item active main-game-item">
+                    <span class="nav-icon"><img src="assets/images/Graduation-cap.png" alt="Calibration" class="nav-icon-img"></span>
+                    <span>Expert Calibration</span>
+                </a>
+                <div class="nav-section-label">Mini-Games</div>
+                <a href="consensus.html" class="desktop-nav-item">
+                    <span class="nav-icon"><img src="assets/images/Target.png" alt="Consensus" class="nav-icon-img"></span>
+                    <span>Consensus</span>
+                </a>
+                <a href="speed.html" class="desktop-nav-item">
+                    <span class="nav-icon"><img src="assets/images/Lightning-bolt.png" alt="Speed" class="nav-icon-img"></span>
+                    <span>Speed Trial</span>
+                </a>
+                <div class="nav-section-label" style="margin-top: 10px;">Stats</div>
+                <a href="leaderboard.html" class="desktop-nav-item">
+                    <span class="nav-icon"><img src="assets/images/Trophy.png" alt="Leaderboard" class="nav-icon-img"></span>
+                    <span>Leaderboard</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <a href="home.html" class="back-btn" onclick="ThinkTankAudio.click()"><img src="assets/images/Back-arrow.png" alt="Back" class="back-icon-img"></a>
+                <h1 class="page-title">// EXPERT CALIBRATION</h1>
+            </div>
+
+            <p class="intro-text">
+                Progress through difficulty levels. Complete 3 questions at each level to unlock the next one.
+            </p>
+
+            <div class="levels-grid">
+                <!-- Novice Level -->
+                <div class="level-card" id="novice-card" onclick="selectLevel('novice')">
+                    <div class="level-header">
+                        <div class="level-icon novice"><img src="assets/images/Novice.png" alt="Novice" class="level-icon-img"></div>
+                        <div class="level-info">
+                            <div class="level-title">
+                                NOVICE
+                                <span class="current-badge" id="novice-badge" style="display: none;">ACTIVE</span>
+                            </div>
+                            <div class="level-subtitle">Obvious overthinking patterns</div>
+                        </div>
+                        <div class="level-points">
+                            <div class="points-value">+1</div>
+                            <div class="points-label">per query</div>
+                        </div>
+                    </div>
+                    <div class="level-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill novice" id="novice-progress" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="novice-text">0/20</div>
+                    </div>
+                    <div class="level-desc">Simple math & logic. Spot repeated calculations and excessive verification.</div>
+                </div>
+
+                <!-- Apprentice Level -->
+                <div class="level-card locked" id="apprentice-card" onclick="selectLevel('apprentice')">
+                    <div class="level-header">
+                        <div class="level-icon apprentice" id="apprentice-icon"><img src="assets/images/Apprentice.png" alt="Apprentice" class="level-icon-img"></div>
+                        <div class="level-info">
+                            <div class="level-title">
+                                APPRENTICE
+                                <span class="current-badge" id="apprentice-badge" style="display: none;">ACTIVE</span>
+                            </div>
+                            <div class="level-subtitle">Subtle redundancy patterns</div>
+                        </div>
+                        <div class="level-points">
+                            <div class="points-value">+2</div>
+                            <div class="points-label">per query</div>
+                        </div>
+                    </div>
+                    <div class="level-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill apprentice" id="apprentice-progress" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="apprentice-text">0/20</div>
+                    </div>
+                    <div class="level-desc">Medium difficulty. Find restating problems and unnecessary hedging.</div>
+                    <div class="lock-overlay" id="apprentice-lock">
+                        <div class="lock-content">
+                            <div class="lock-icon"><img src="assets/images/Lock.png" alt="Locked" class="lock-icon-img"></div>
+                            <div class="lock-text">Complete 3 Novice queries</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expert Level -->
+                <div class="level-card locked" id="expert-card" onclick="selectLevel('expert')">
+                    <div class="level-header">
+                        <div class="level-icon expert" id="expert-icon"><img src="assets/images/Expert.png" alt="Expert" class="level-icon-img"></div>
+                        <div class="level-info">
+                            <div class="level-title">
+                                EXPERT
+                                <span class="current-badge" id="expert-badge" style="display: none;">ACTIVE</span>
+                            </div>
+                            <div class="level-subtitle">Nuanced judgment required</div>
+                        </div>
+                        <div class="level-points">
+                            <div class="points-value">+3</div>
+                            <div class="points-label">per query</div>
+                        </div>
+                    </div>
+                    <div class="level-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill expert" id="expert-progress" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="expert-text">0/20</div>
+                    </div>
+                    <div class="level-desc">Complex chains. Identify dead-end reasoning and over-consideration.</div>
+                    <div class="lock-overlay" id="expert-lock">
+                        <div class="lock-content">
+                            <div class="lock-icon"><img src="assets/images/Lock.png" alt="Locked" class="lock-icon-img"></div>
+                            <div class="lock-text">Complete 3 Apprentice queries</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Master Level -->
+                <div class="level-card locked" id="master-card" onclick="selectLevel('master')">
+                    <div class="level-header">
+                        <div class="level-icon master" id="master-icon"><img src="assets/images/Master.png" alt="Master" class="level-icon-img"></div>
+                        <div class="level-info">
+                            <div class="level-title">
+                                MASTER
+                                <span class="current-badge" id="master-badge" style="display: none;">ACTIVE</span>
+                            </div>
+                            <div class="level-subtitle">Expert-level ambiguity</div>
+                        </div>
+                        <div class="level-points">
+                            <div class="points-value">+4</div>
+                            <div class="points-label">per query</div>
+                        </div>
+                    </div>
+                    <div class="level-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill master" id="master-progress" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="master-text">0/20</div>
+                    </div>
+                    <div class="level-desc">Edge cases. Decide when verification IS vs ISN'T needed.</div>
+                    <div class="lock-overlay" id="master-lock">
+                        <div class="lock-content">
+                            <div class="lock-icon"><img src="assets/images/Lock.png" alt="Locked" class="lock-icon-img"></div>
+                            <div class="lock-text">Complete 3 Expert queries</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const levels = ['novice', 'apprentice', 'expert', 'master'];
+
+        function loadLevelData() {
+            const userData = localStorage.getItem('thinktank_user');
+            if (!userData) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const user = JSON.parse(userData);
+
+            levels.forEach(level => {
+                const completed = user.levelsCompleted[level] || 0;
+                const isUnlocked = user.unlockedLevels.includes(level);
+                const isCurrent = user.highestLevel === level;
+
+                document.getElementById(`${level}-progress`).style.width = `${(completed / 20) * 100}%`;
+                document.getElementById(`${level}-text`).textContent = `${completed}/20`;
+
+                const card = document.getElementById(`${level}-card`);
+                const lock = document.getElementById(`${level}-lock`);
+
+                if (isUnlocked) {
+                    card.classList.remove('locked');
+                    if (lock) lock.style.display = 'none';
+                }
+
+                if (isCurrent) {
+                    card.classList.add('current');
+                    document.getElementById(`${level}-badge`).style.display = 'inline';
+                }
+            });
+        }
+
+        function selectLevel(level) {
+            const userData = localStorage.getItem('thinktank_user');
+            const user = JSON.parse(userData);
+
+            if (!user.unlockedLevels.includes(level)) return;
+
+            ThinkTankAudio.click();
+            localStorage.setItem('thinktank_current_level', level);
+            window.location.href = 'gameplay.html';
+        }
+
+        loadLevelData();
+    </script>
+</body>
+</html>

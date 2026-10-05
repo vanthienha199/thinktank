@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThinkTank - Create Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/audio.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .preview-avatar-img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+        .header-icon-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        .signup-container {
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            z-index: 1;
+        }
+        .header-icon {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.5));
+        }
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #a855f7;
+            text-align: center;
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+            letter-spacing: 2px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #777;
+            text-align: center;
+            margin-bottom: 35px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: #00f0ff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .text-input {
+            width: 100%;
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            padding: 16px 60px 16px 20px;
+            font-size: 16px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            transition: all 0.3s;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .text-input:focus {
+            outline: none;
+            border-color: #00f0ff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        .text-input::placeholder {
+            color: #444;
+        }
+        .char-count {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            color: #444;
+        }
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+        .avatar-option {
+            aspect-ratio: 1;
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(255, 0, 255, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.3s;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+        .avatar-option:hover {
+            border-color: #ff00ff;
+            background: rgba(255, 0, 255, 0.1);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+        }
+        .avatar-option.selected {
+            border-color: #ff00ff;
+            background: rgba(255, 0, 255, 0.2);
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.5);
+        }
+        .selected-preview {
+            text-align: center;
+            margin-top: 25px;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(255, 0, 255, 0.1) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+        .preview-avatar {
+            font-size: 50px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.5));
+        }
+        .preview-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+        .preview-subtitle {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            color: #00f0ff;
+            margin-top: 6px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .submit-btn {
+            margin-top: 30px;
+            width: 100%;
+            background: transparent;
+            border: 2px solid #00f0ff;
+            color: #00f0ff;
+            padding: 18px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            opacity: 0.3;
+            pointer-events: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+        }
+        .submit-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .submit-btn.active:hover {
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+        }
+        .error-msg {
+            color: #ff3366;
+            font-size: 12px;
+            margin-top: 8px;
+            display: none;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        /* Desktop */
+        @media (min-width: 768px) {
+            .signup-container {
+                max-width: 500px;
+            }
+            .header-icon {
+                font-size: 70px;
+            }
+            .title {
+                font-size: 28px;
+            }
+            .avatar-option {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="header-icon"><img src="assets/images/User-silhouette.png" alt="Profile" class="header-icon-img"></div>
+        <h1 class="title">// CREATE PROFILE</h1>
+        <p class="subtitle">Initialize your neural identity</p>
+
+        <div class="login-toggle" id="loginLink" style="display: none; text-align: center; margin-bottom: 30px;">
+            <span style="color: #888; font-size: 16px;">Already registered?</span>
+            <button onclick="toggleLoginMode()" style="
+                background: transparent;
+                border: 2px solid #00f0ff;
+                color: #00f0ff;
+                padding: 12px 30px;
+                font-family: 'Orbitron', sans-serif;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+                margin-left: 15px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                transition: all 0.3s;
+                clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+            " onmouseover="this.style.background='rgba(0,240,255,0.1)'; this.style.boxShadow='0 0 20px rgba(0,240,255,0.5)';" onmouseout="this.style.background='transparent'; this.style.boxShadow='none';">[ Login ]</button>
+        </div>
+
+        <div class="form-section" id="authFields" style="display: none;">
+            <label class="label">// Email</label>
+            <div class="input-wrapper">
+                <input
+                    type="email"
+                    class="text-input"
+                    id="email"
+                    placeholder="Enter email..."
+                    oninput="validateForm()"
+                >
+            </div>
+            <p class="error-msg" id="emailError">// Valid email required</p>
+        </div>
+
+        <div class="form-section" id="passwordField" style="display: none;">
+            <label class="label">// Password</label>
+            <div class="input-wrapper">
+                <input
+                    type="password"
+                    class="text-input"
+                    id="password"
+                    placeholder="Enter password (6+ chars)..."
+                    oninput="validateForm()"
+                >
+            </div>
+            <p class="error-msg" id="passwordError">// Password must be 6+ characters</p>
+        </div>
+
+        <div class="form-section">
+            <label class="label">// Callsign</label>
+            <div class="input-wrapper">
+                <input
+                    type="text"
+                    class="text-input"
+                    id="username"
+                    placeholder="Enter callsign..."
+                    maxlength="15"
+                    oninput="validateForm()"
+                >
+                <span class="char-count" id="charCount">0/15</span>
+            </div>
+            <p class="error-msg" id="errorMsg">// Callsign must be 3-15 characters</p>
+        </div>
+
+        <div class="form-section">
+            <label class="label">// Select Avatar</label>
+            <div class="avatar-grid">
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar1.png')"><img src="assets/images/Avatar1.png" alt="Avatar 1" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar2.png')"><img src="assets/images/Avatar2.png" alt="Avatar 2" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar3.png')"><img src="assets/images/Avatar3.png" alt="Avatar 3" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar4.png')"><img src="assets/images/Avatar4.png" alt="Avatar 4" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar5.png')"><img src="assets/images/Avatar5.png" alt="Avatar 5" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar6.png')"><img src="assets/images/Avatar6.png" alt="Avatar 6" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar7.png')"><img src="assets/images/Avatar7.png" alt="Avatar 7" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar8.png')"><img src="assets/images/Avatar8.png" alt="Avatar 8" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar9.png')"><img src="assets/images/Avatar9.png" alt="Avatar 9" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar10.png')"><img src="assets/images/Avatar10.png" alt="Avatar 10" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar11.png')"><img src="assets/images/Avatar11.png" alt="Avatar 11" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar12.png')"><img src="assets/images/Avatar12.png" alt="Avatar 12" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar13.png')"><img src="assets/images/Avatar13.png" alt="Avatar 13" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar14.png')"><img src="assets/images/Avatar14.png" alt="Avatar 14" class="avatar-img"></div>
+                <div class="avatar-option" onclick="selectAvatar(this, 'assets/images/Avatar15.png')"><img src="assets/images/Avatar15.png" alt="Avatar 15" class="avatar-img"></div>
+            </div>
+        </div>
+
+        <div class="selected-preview" id="preview" style="display: none;">
+            <div class="preview-avatar" id="previewAvatar"><img src="assets/images/Avatar1.png" alt="Avatar" class="preview-avatar-img" id="previewAvatarImg"></div>
+            <div class="preview-name" id="previewName">Username</div>
+            <div class="preview-subtitle">Novice Operator</div>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="createProfile()">
+            [ Initialize System ]
+        </button>
+    </div>
+
+    <script>
+        let selectedAvatar = null;
+        let isProductionMode = false;
+        let isLoginMode = false;
+
+        // Initialize and check if Supabase is configured
+        document.addEventListener('DOMContentLoaded', async () => {
+            await ThinkTankApp.init();
+            isProductionMode = !ThinkTankApp.isDemoMode();
+
+            if (isProductionMode) {
+                document.getElementById('authFields').style.display = 'block';
+                document.getElementById('passwordField').style.display = 'block';
+                document.getElementById('loginLink').style.display = 'block';
+            }
+        });
+
+        function toggleLoginMode() {
+            ThinkTankAudio.click();
+            isLoginMode = !isLoginMode;
+            const title = document.querySelector('.title');
+            const subtitle = document.querySelector('.subtitle');
+            const submitBtn = document.getElementById('submitBtn');
+            const loginToggle = document.getElementById('loginLink');
+            const usernameSection = document.getElementById('username').closest('.form-section');
+            const avatarSection = document.querySelector('.avatar-grid').closest('.form-section');
+            const preview = document.getElementById('preview');
+
+            if (isLoginMode) {
+                title.textContent = '// LOGIN';
+                subtitle.textContent = 'Access your neural identity';
+                submitBtn.textContent = '[ Access System ]';
+                // Update toggle button to show Register option
+                loginToggle.querySelector('span').textContent = 'New user?';
+                loginToggle.querySelector('button').textContent = '[ Register ]';
+                usernameSection.style.display = 'none';
+                avatarSection.style.display = 'none';
+                preview.style.display = 'none';
+                validateForm();
+            } else {
+                title.textContent = '// CREATE PROFILE';
+                subtitle.textContent = 'Initialize your neural identity';
+                submitBtn.textContent = '[ Initialize System ]';
+                // Update toggle button to show Login option
+                loginToggle.querySelector('span').textContent = 'Already registered?';
+                loginToggle.querySelector('button').textContent = '[ Login ]';
+                usernameSection.style.display = 'block';
+                avatarSection.style.display = 'block';
+                validateForm();
+            }
+        }
+
+        function selectAvatar(element, avatarFile) {
+            ThinkTankAudio.click();
+            document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedAvatar = avatarFile;
+            document.getElementById('previewAvatarImg').src = avatarFile;
+            validateForm();
+        }
+
+        function validateForm() {
+            const username = document.getElementById('username').value.trim();
+            const charCount = document.getElementById('charCount');
+            const submitBtn = document.getElementById('submitBtn');
+            const preview = document.getElementById('preview');
+            const previewName = document.getElementById('previewName');
+            const errorMsg = document.getElementById('errorMsg');
+
+            charCount.textContent = `${username.length}/15`;
+
+            let isValid = false;
+
+            // Login mode - only need email and password
+            if (isLoginMode && isProductionMode) {
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                const passwordValid = password.length >= 6;
+
+                document.getElementById('emailError').style.display = email && !emailValid ? 'block' : 'none';
+                document.getElementById('passwordError').style.display = password && !passwordValid ? 'block' : 'none';
+
+                isValid = emailValid && passwordValid;
+            }
+            // Register mode - need username, avatar, and (in production) email/password
+            else {
+                isValid = username.length >= 3 && username.length <= 15 && selectedAvatar;
+
+                // Additional validation for production mode
+                if (isProductionMode) {
+                    const email = document.getElementById('email').value.trim();
+                    const password = document.getElementById('password').value;
+                    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                    const passwordValid = password.length >= 6;
+
+                    document.getElementById('emailError').style.display = email && !emailValid ? 'block' : 'none';
+                    document.getElementById('passwordError').style.display = password && !passwordValid ? 'block' : 'none';
+
+                    isValid = isValid && emailValid && passwordValid;
+                }
+
+                if (username.length > 0 && username.length < 3) {
+                    errorMsg.style.display = 'block';
+                } else {
+                    errorMsg.style.display = 'none';
+                }
+            }
+
+            if (isValid) {
+                submitBtn.classList.add('active');
+                if (!isLoginMode) {
+                    preview.style.display = 'block';
+                    previewName.textContent = username;
+                }
+            } else {
+                submitBtn.classList.remove('active');
+                if (!isLoginMode && (!selectedAvatar || username.length === 0)) {
+                    preview.style.display = 'none';
+                }
+            }
+        }
+
+        async function createProfile() {
+            ThinkTankAudio.click();
+            const submitBtn = document.getElementById('submitBtn');
+            const email = document.getElementById('email')?.value.trim();
+            const password = document.getElementById('password')?.value;
+
+            submitBtn.textContent = '[ Processing... ]';
+            submitBtn.classList.remove('active');
+
+            // Login mode
+            if (isLoginMode && isProductionMode) {
+                if (!email || !password) {
+                    alert('Error: Please enter email and password');
+                    submitBtn.textContent = '[ Access System ]';
+                    submitBtn.classList.add('active');
+                    return;
+                }
+
+                const { user, error } = await ThinkTankApp.signIn(email, password);
+
+                if (error) {
+                    alert('Error: ' + error.message);
+                    submitBtn.textContent = '[ Access System ]';
+                    submitBtn.classList.add('active');
+                    return;
+                }
+
+                if (!user) {
+                    alert('Error: Invalid email or password');
+                    submitBtn.textContent = '[ Access System ]';
+                    submitBtn.classList.add('active');
+                    return;
+                }
+
+                window.location.href = 'home.html';
+                return;
+            }
+
+            // Signup mode
+            const username = document.getElementById('username').value.trim();
+
+            if (username.length < 3 || !selectedAvatar) return;
+
+            if (isProductionMode) {
+                // Check if username is already taken
+                const usernameTaken = await checkUsernameExists(username);
+                if (usernameTaken) {
+                    alert('Error: This callsign is already taken. Please choose another.');
+                    submitBtn.textContent = '[ Initialize System ]';
+                    submitBtn.classList.add('active');
+                    return;
+                }
+
+                const { user, error } = await ThinkTankApp.signUp(email, password, username, selectedAvatar);
+
+                if (error) {
+                    // Handle specific Supabase errors
+                    let errorMsg = error.message;
+                    if (error.message.includes('already registered') || error.message.includes('already exists')) {
+                        errorMsg = 'This email is already registered. Try logging in instead.';
+                    }
+                    alert('Error: ' + errorMsg);
+                    submitBtn.textContent = '[ Initialize System ]';
+                    submitBtn.classList.add('active');
+                    return;
+                }
+
+                // If no user returned (possible with disabled email confirmation), check if signup actually worked
+                if (!user) {
+                    alert('Error: Could not create account. This email may already be registered.');
+                    submitBtn.textContent = '[ Initialize System ]';
+                    submitBtn.classList.add('active');
+                    return;
+                }
+            } else {
+                // Demo mode - just create local user
+                ThinkTankApp.createDemoUser(username, selectedAvatar);
+            }
+
+            window.location.href = 'home.html';
+        }
+
+        async function checkUsernameExists(username) {
+            const client = ThinkTankConfig.getClient();
+            if (!client) return false;
+
+            const { data, error } = await client
+                .from('profiles')
+                .select('username')
+                .eq('username', username)
+                .maybeSingle();
+
+            return data !== null;
+        }
+    </script>
+</body>
+</html>

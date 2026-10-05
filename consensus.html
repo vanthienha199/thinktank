@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThinkTank - Consensus Challenge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/audio.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .icon-img {
+            width: 1em;
+            height: 1em;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+        .back-icon-img {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+        }
+        .mode-icon-img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+        .point-icon-img {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0f;
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        .main-content {
+            padding: 20px;
+            padding-bottom: 140px;
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+        }
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+        .back-btn:hover {
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        .mode-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mode-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.3) 0%, rgba(168, 85, 247, 0.3) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+        .mode-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #00f0ff;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            letter-spacing: 1px;
+        }
+        .round-counter {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(0, 240, 255, 0.2) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 8px 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: #a855f7;
+            letter-spacing: 1px;
+        }
+
+        /* Question Card */
+        .question-card {
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px));
+        }
+        .question-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #a855f7, #00f0ff);
+        }
+        .question-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            color: #a855f7;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        .question-text {
+            font-size: 18px;
+            color: #fff;
+            line-height: 1.5;
+        }
+        .instruction {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .instruction strong {
+            color: #ff3366;
+            text-shadow: 0 0 10px rgba(255, 51, 102, 0.5);
+        }
+
+        /* Steps */
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .step {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            gap: 12px;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+        .step:hover {
+            border-color: rgba(0, 240, 255, 0.4);
+            background: rgba(0, 240, 255, 0.05);
+        }
+        .step.selected {
+            background: rgba(255, 51, 102, 0.15);
+            border-color: rgba(255, 51, 102, 0.5);
+            box-shadow: 0 0 20px rgba(255, 51, 102, 0.2);
+        }
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: #00f0ff;
+            flex-shrink: 0;
+        }
+        .step.selected .step-number {
+            background: rgba(255, 51, 102, 0.3);
+            border-color: #ff3366;
+            color: #ff3366;
+        }
+        .step-content { flex: 1; }
+        .step-type {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            padding: 3px 10px;
+            display: inline-block;
+            letter-spacing: 1px;
+        }
+        .step-type.thinking {
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: #00f0ff;
+        }
+        .step-type.calculation {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+        }
+        .step-type.verification {
+            background: rgba(240, 255, 0, 0.2);
+            border: 1px solid rgba(240, 255, 0, 0.3);
+            color: #f0ff00;
+        }
+        .step-type.conclusion {
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            color: #a855f7;
+        }
+        .step-text {
+            font-size: 15px;
+            color: #ddd;
+            line-height: 1.5;
+        }
+        .step-check {
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(0, 240, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+        .step.selected .step-check {
+            background: #ff3366;
+            border-color: #ff3366;
+            box-shadow: 0 0 10px rgba(255, 51, 102, 0.5);
+        }
+        .step.selected .step-check::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+        }
+
+        /* Result State */
+        .step.result { cursor: default; }
+        .consensus-bar {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .consensus-track {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        .consensus-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00f0ff, #a855f7);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            transition: width 0.8s ease-out;
+        }
+        .consensus-percent {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: #00f0ff;
+            min-width: 40px;
+        }
+        .your-vote {
+            font-size: 11px;
+            color: #666;
+            margin-top: 6px;
+        }
+        .your-vote.match { color: #00ff88; }
+        .your-vote.mismatch { color: #f0ff00; }
+
+        /* Result Summary */
+        .result-summary {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 240, 255, 0.1) 100%);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+        .result-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: #00ff88;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            margin-bottom: 5px;
+        }
+        .result-desc {
+            font-size: 16px;
+            color: #00ff88;
+        }
+
+        /* Bottom Section */
+        .bottom-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(10, 10, 15, 0.98) 80%, transparent);
+            padding: 20px;
+            padding-bottom: 30px;
+            z-index: 100;
+        }
+        .bottom-inner {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .marked-count {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #888;
+        }
+        .marked-count span {
+            font-family: 'Orbitron', sans-serif;
+            color: #ff3366;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255, 51, 102, 0.5);
+        }
+        .submit-btn {
+            width: 100%;
+            background: transparent;
+            border: 2px solid #00f0ff;
+            color: #00f0ff;
+            padding: 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+        }
+        .submit-btn:hover {
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.4);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-secondary {
+            flex: 1;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #666;
+            padding: 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+        .btn-secondary:hover {
+            border-color: rgba(0, 240, 255, 0.3);
+            color: #00f0ff;
+        }
+
+        /* Desktop */
+        @media (min-width: 768px) {
+            .main-content {
+                padding: 40px;
+                padding-bottom: 160px;
+            }
+            .question-card { padding: 24px; }
+            .question-text { font-size: 17px; }
+            .step { padding: 18px; }
+            .step-text { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="main-content">
+        <div class="game-header">
+            <a href="home.html" class="back-btn" onclick="ThinkTankAudio.click()"><img src="assets/images/Back-arrow.png" alt="Back" class="back-icon-img"></a>
+            <div class="mode-indicator">
+                <div class="mode-icon"><img src="assets/images/Target.png" alt="Consensus" class="mode-icon-img"></div>
+                <span class="mode-name">CONSENSUS</span>
+            </div>
+            <div class="round-counter" id="roundCounter">ROUND 01</div>
+        </div>
+
+        <div id="content"></div>
+    </main>
+
+    <div class="bottom-section">
+        <div class="bottom-inner" id="bottomSection">
+            <div class="marked-count">
+                <span id="markedCount">0</span> steps flagged as wasteful
+            </div>
+            <button class="submit-btn" onclick="submitJudgment()">[ Reveal Consensus ]</button>
+        </div>
+    </div>
+
+    <script>
+        // Fallback chains for demo mode
+        const fallbackConsensusChains = [
+            {
+                question: 'A rectangle has length 12 and width 5. What is its area?',
+                steps: [
+                    { type: 'thinking', content: 'I need to find the area of a rectangle with length 12 and width 5.', consensus: 15 },
+                    { type: 'thinking', content: 'The formula for area of a rectangle is: Area = length × width', consensus: 8 },
+                    { type: 'calculation', content: 'Area = 12 × 5 = 60', consensus: 5 },
+                    { type: 'verification', content: 'Let me double-check: 12 × 5. That\'s 10×5=50 plus 2×5=10, so 60. Correct!', consensus: 72 },
+                    { type: 'conclusion', content: 'The area is 60 square units.', consensus: 3 }
+                ],
+                answer: '60 square units'
+            },
+            {
+                question: 'If a book costs $24 and is on sale for 1/3 off, what is the sale price?',
+                steps: [
+                    { type: 'thinking', content: 'The book is $24 with 1/3 off. I need to find the sale price.', consensus: 12 },
+                    { type: 'thinking', content: 'First, let me understand what 1/3 off means. It means the discount is 1/3 of the original price.', consensus: 45 },
+                    { type: 'calculation', content: 'Discount = $24 × (1/3) = $8', consensus: 6 },
+                    { type: 'calculation', content: 'Sale price = $24 - $8 = $16', consensus: 4 },
+                    { type: 'verification', content: 'Checking: $16 is 2/3 of $24. Let me verify: $24 × (2/3) = $16. Yes!', consensus: 68 },
+                    { type: 'conclusion', content: 'The sale price is $16.', consensus: 5 }
+                ],
+                answer: '$16'
+            }
+        ];
+
+        let currentChain = null;
+        let selectedSteps = new Set();
+        let hasSubmitted = false;
+        let currentRound = 1;
+        let consensusData = null;
+
+        async function loadQuestion() {
+            await ThinkTankApp.init();
+            hasSubmitted = false;
+            selectedSteps.clear();
+            consensusData = null;
+
+            // Try to fetch from Supabase
+            let chain = await ThinkTankApp.getRandomChain('consensus');
+
+            if (!chain) {
+                // Fallback to local chains
+                chain = fallbackConsensusChains[Math.floor(Math.random() * fallbackConsensusChains.length)];
+            }
+
+            currentChain = chain;
+            document.getElementById('roundCounter').textContent = `ROUND ${String(currentRound).padStart(2, '0')}`;
+            renderQuestion();
+            renderBottomSection();
+        }
+
+        function renderQuestion() {
+            let stepsHTML = '';
+            currentChain.steps.forEach((step, index) => {
+                stepsHTML += `
+                    <div class="step" id="step-${index}" onclick="toggleStep(${index})">
+                        <div class="step-number">${String(index + 1).padStart(2, '0')}</div>
+                        <div class="step-content">
+                            <span class="step-type ${step.type}">${step.type}</span>
+                            <div class="step-text">${step.content}</div>
+                        </div>
+                        <div class="step-check"></div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('content').innerHTML = `
+                <div class="question-card">
+                    <div class="question-label">// Query Input</div>
+                    <div class="question-text">${currentChain.question}</div>
+                </div>
+                <div class="instruction">
+                    <img src="assets/images/Point-icon.png" alt="Point" class="point-icon-img"> Flag steps that are <strong>WASTEFUL</strong>
+                </div>
+                <div class="steps-container">${stepsHTML}</div>
+            `;
+        }
+
+        function renderResults() {
+            let stepsHTML = '';
+            currentChain.steps.forEach((step, index) => {
+                const userMarked = selectedSteps.has(index);
+                // Use real consensus data if available, otherwise use embedded consensus
+                let consensusPercent = step.consensus || 0;
+                if (consensusData && consensusData[index]) {
+                    consensusPercent = consensusData[index].percentage || 0;
+                }
+                const highConsensus = consensusPercent >= 50;
+                const match = (userMarked && highConsensus) || (!userMarked && !highConsensus);
+
+                stepsHTML += `
+                    <div class="step result ${userMarked ? 'selected' : ''}">
+                        <div class="step-number">${String(index + 1).padStart(2, '0')}</div>
+                        <div class="step-content">
+                            <span class="step-type ${step.type}">${step.type}</span>
+                            <div class="step-text">${step.content}</div>
+                            <div class="consensus-bar">
+                                <div class="consensus-track">
+                                    <div class="consensus-fill" style="width: ${consensusPercent}%"></div>
+                                </div>
+                                <span class="consensus-percent">${Math.round(consensusPercent)}%</span>
+                            </div>
+                            <div class="your-vote ${match ? 'match' : 'mismatch'}">
+                                ${userMarked ? '✓ You flagged' : '○ Not flagged'} •
+                                ${match ? '✓ Matches consensus' : '△ Different from majority'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            let matches = 0;
+            currentChain.steps.forEach((step, index) => {
+                const userMarked = selectedSteps.has(index);
+                let consensusPercent = step.consensus || 0;
+                if (consensusData && consensusData[index]) {
+                    consensusPercent = consensusData[index].percentage || 0;
+                }
+                const highConsensus = consensusPercent >= 50;
+                if ((userMarked && highConsensus) || (!userMarked && !highConsensus)) matches++;
+            });
+            const matchPercent = Math.round((matches / currentChain.steps.length) * 100);
+
+            document.getElementById('content').innerHTML = `
+                <div class="result-summary">
+                    <div class="result-title">${matchPercent}% SYNC</div>
+                    <div class="result-desc">Matched community on ${matches}/${currentChain.steps.length} steps</div>
+                </div>
+                <div class="question-card">
+                    <div class="question-label">// Query Input</div>
+                    <div class="question-text">${currentChain.question}</div>
+                </div>
+                <div class="instruction"><img src="assets/images/Stats.png" alt="Stats" class="point-icon-img"> Community consensus data:</div>
+                <div class="steps-container">${stepsHTML}</div>
+            `;
+        }
+
+        function renderBottomSection() {
+            const bottomSection = document.getElementById('bottomSection');
+            if (hasSubmitted) {
+                bottomSection.innerHTML = `
+                    <div class="btn-group">
+                        <button class="submit-btn" style="flex: 2;" onclick="nextRound()">[ Next Round ]</button>
+                        <a href="home.html" class="btn-secondary">[ Exit ]</a>
+                    </div>
+                `;
+            } else {
+                bottomSection.innerHTML = `
+                    <div class="marked-count">
+                        <span id="markedCount">${selectedSteps.size}</span> steps flagged as wasteful
+                    </div>
+                    <button class="submit-btn" onclick="submitJudgment()">[ Reveal Consensus ]</button>
+                `;
+            }
+        }
+
+        function toggleStep(index) {
+            if (hasSubmitted) return;
+            ThinkTankAudio.click();
+            const stepElement = document.getElementById(`step-${index}`);
+            if (selectedSteps.has(index)) {
+                selectedSteps.delete(index);
+                stepElement.classList.remove('selected');
+            } else {
+                selectedSteps.add(index);
+                stepElement.classList.add('selected');
+            }
+            document.getElementById('markedCount').textContent = selectedSteps.size;
+        }
+
+        async function submitJudgment() {
+            ThinkTankAudio.click();
+            hasSubmitted = true;
+
+            // Submit judgment and fetch real consensus if available
+            if (!ThinkTankApp.isDemoMode() && currentChain.id) {
+                await ThinkTankApp.submitJudgment({
+                    chainId: currentChain.id,
+                    flaggedSteps: Array.from(selectedSteps),
+                    totalSteps: currentChain.steps.length,
+                    mode: 'consensus'
+                });
+
+                // Fetch updated consensus data
+                consensusData = await ThinkTankApp.getConsensus(currentChain.id);
+            }
+
+            renderResults();
+            renderBottomSection();
+        }
+
+        function nextRound() {
+            ThinkTankAudio.click();
+            currentRound++;
+            loadQuestion();
+        }
+
+        loadQuestion();
+    </script>
+</body>
+</html>

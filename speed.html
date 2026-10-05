@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThinkTank - Speed Trial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/audio.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .icon-img {
+            width: 1em;
+            height: 1em;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+        .speed-icon-img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+        .rule-icon-img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+        .timer-icon-img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+        .results-icon-img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+        .question-icon-img {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Start Screen */
+        .start-screen {
+            text-align: center;
+        }
+        .speed-icon {
+            font-size: 70px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 30px rgba(240, 255, 0, 0.5));
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .speed-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #f0ff00;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(240, 255, 0, 0.5);
+            letter-spacing: 3px;
+        }
+        .speed-desc {
+            font-size: 18px;
+            color: #888;
+            margin-bottom: 35px;
+            line-height: 1.5;
+        }
+        .rules-card {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(240, 255, 0, 0.2);
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+        .rule {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .rule:last-child { margin-bottom: 0; }
+        .rule-icon { font-size: 24px; }
+        .rule-text {
+            font-size: 16px;
+            color: #ddd;
+        }
+        .best-score {
+            background: linear-gradient(135deg, rgba(240, 255, 0, 0.1) 0%, rgba(255, 0, 255, 0.1) 100%);
+            border: 1px solid rgba(240, 255, 0, 0.3);
+            padding: 20px;
+            margin-bottom: 25px;
+            clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+        }
+        .best-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            color: #f0ff00;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .best-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: #f0ff00;
+            text-shadow: 0 0 20px rgba(240, 255, 0, 0.5);
+        }
+        .start-btn {
+            width: 100%;
+            background: transparent;
+            border: 2px solid #f0ff00;
+            color: #f0ff00;
+            padding: 18px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+        }
+        .start-btn:hover {
+            background: rgba(240, 255, 0, 0.1);
+            box-shadow: 0 0 30px rgba(240, 255, 0, 0.4);
+            text-shadow: 0 0 10px rgba(240, 255, 0, 0.8);
+        }
+        .back-link {
+            color: #555;
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+        .back-link:hover {
+            color: #00f0ff;
+        }
+
+        /* Game Screen */
+        .game-screen {
+            display: none;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .timer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, rgba(255, 51, 102, 0.3) 0%, rgba(255, 0, 255, 0.3) 100%);
+            border: 1px solid rgba(255, 51, 102, 0.5);
+            padding: 12px 20px;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+        .timer-icon { font-size: 20px; }
+        .timer-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #ff3366;
+            text-shadow: 0 0 15px rgba(255, 51, 102, 0.5);
+            font-variant-numeric: tabular-nums;
+        }
+        .timer.warning {
+            animation: timerPulse 0.5s ease-in-out infinite;
+            border-color: #ff3366;
+            box-shadow: 0 0 30px rgba(255, 51, 102, 0.5);
+        }
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .chains-counter {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+        .chains-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            color: #00f0ff;
+            letter-spacing: 1px;
+        }
+        .chains-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: #00f0ff;
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+        }
+        .quick-question {
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 16px;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #fff;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .quick-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .quick-step {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+        }
+        .quick-step:hover {
+            border-color: rgba(0, 240, 255, 0.4);
+            background: rgba(0, 240, 255, 0.05);
+        }
+        .quick-step.selected {
+            background: rgba(255, 51, 102, 0.15);
+            border-color: rgba(255, 51, 102, 0.5);
+        }
+        .quick-step-num {
+            width: 24px;
+            height: 24px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            color: #00f0ff;
+            flex-shrink: 0;
+        }
+        .quick-step.selected .quick-step-num {
+            background: rgba(255, 51, 102, 0.3);
+            border-color: #ff3366;
+            color: #ff3366;
+        }
+        .quick-step-text {
+            font-size: 15px;
+            color: #ddd;
+            line-height: 1.4;
+        }
+        .quick-submit {
+            width: 100%;
+            background: transparent;
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .quick-submit:hover {
+            background: rgba(0, 255, 136, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+        }
+        .quick-submit:active { transform: scale(0.98); }
+
+        /* Results Screen */
+        .results-screen {
+            display: none;
+            text-align: center;
+        }
+        .results-icon {
+            font-size: 70px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.5));
+        }
+        .results-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: #ff00ff;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+            letter-spacing: 2px;
+        }
+        .results-subtitle {
+            font-size: 18px;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .score-card {
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.2) 0%, rgba(0, 240, 255, 0.2) 100%);
+            border: 1px solid rgba(255, 0, 255, 0.4);
+            padding: 30px 50px;
+            margin-bottom: 25px;
+            display: inline-block;
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+        }
+        .score-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            color: #ff00ff;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .score-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 56px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(255, 0, 255, 0.5);
+        }
+        .score-unit {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: #666;
+            letter-spacing: 2px;
+        }
+        .new-best {
+            background: linear-gradient(135deg, rgba(240, 255, 0, 0.2) 0%, rgba(0, 255, 136, 0.2) 100%);
+            border: 1px solid rgba(240, 255, 0, 0.5);
+            padding: 10px 24px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: #f0ff00;
+            margin-bottom: 25px;
+            display: inline-block;
+            animation: glow 1s ease-in-out infinite;
+            letter-spacing: 2px;
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(240, 255, 0, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(240, 255, 0, 0.6); }
+        }
+        .results-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .retry-btn {
+            width: 100%;
+            background: transparent;
+            border: 2px solid #f0ff00;
+            color: #f0ff00;
+            padding: 18px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+            transition: all 0.3s;
+        }
+        .retry-btn:hover {
+            background: rgba(240, 255, 0, 0.1);
+            box-shadow: 0 0 30px rgba(240, 255, 0, 0.4);
+        }
+        .home-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #666;
+            padding: 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            transition: all 0.3s;
+        }
+        .home-btn:hover {
+            border-color: rgba(0, 240, 255, 0.3);
+            color: #00f0ff;
+        }
+
+        /* Desktop */
+        @media (min-width: 768px) {
+            .container { max-width: 550px; }
+            .speed-icon { font-size: 90px; }
+            .speed-title { font-size: 32px; }
+            .score-value { font-size: 64px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div class="start-screen" id="startScreen">
+            <div class="speed-icon"><img src="assets/images/Lightning-bolt.png" alt="Speed" class="speed-icon-img"></div>
+            <h1 class="speed-title">// SPEED TRIAL</h1>
+            <p class="speed-desc">How many reasoning chains can you analyze in 60 seconds?</p>
+
+            <div class="rules-card">
+                <div class="rule">
+                    <span class="rule-icon"><img src="assets/images/Timer.png" alt="Timer" class="rule-icon-img"></span>
+                    <span class="rule-text">60 seconds on the clock</span>
+                </div>
+                <div class="rule">
+                    <span class="rule-icon"><img src="assets/images/Point-icon.png" alt="Flag" class="rule-icon-img"></span>
+                    <span class="rule-text">Flag wasteful steps quickly</span>
+                </div>
+                <div class="rule">
+                    <span class="rule-icon"><img src="assets/images/Checkmark.png" alt="Submit" class="rule-icon-img"></span>
+                    <span class="rule-text">Submit to advance</span>
+                </div>
+                <div class="rule">
+                    <span class="rule-icon"><img src="assets/images/Trophy.png" alt="Score" class="rule-icon-img"></span>
+                    <span class="rule-text">More chains = higher score</span>
+                </div>
+            </div>
+
+            <div class="best-score">
+                <div class="best-label">// Personal Best</div>
+                <div class="best-value" id="bestScore">0 chains</div>
+            </div>
+
+            <button class="start-btn" onclick="startGame()">[ Initialize Trial ]</button>
+            <a href="home.html" class="back-link">← Return to Hub</a>
+        </div>
+
+        <!-- Game Screen -->
+        <div class="game-screen" id="gameScreen">
+            <div class="game-header">
+                <div class="timer" id="timer">
+                    <span class="timer-icon"><img src="assets/images/Timer.png" alt="Timer" class="timer-icon-img"></span>
+                    <span class="timer-value" id="timerValue">60</span>
+                </div>
+                <div class="chains-counter">
+                    <span class="chains-label">CHAINS</span>
+                    <span class="chains-value" id="chainsCount">0</span>
+                </div>
+            </div>
+
+            <div id="gameContent"></div>
+
+            <button class="quick-submit" onclick="submitQuick()">[ Submit & Next ]</button>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="results-screen" id="resultsScreen">
+            <div class="results-icon"><img src="assets/images/Flag.png" alt="Finish" class="results-icon-img"></div>
+            <h1 class="results-title">// TRIAL COMPLETE</h1>
+            <p class="results-subtitle">Excellent neural processing speed!</p>
+
+            <div class="score-card">
+                <div class="score-label">Chains Analyzed</div>
+                <div class="score-value" id="finalScore">0</div>
+                <div class="score-unit">CHAINS</div>
+            </div>
+
+            <div class="new-best" id="newBest" style="display: none;"><img src="assets/images/Lightning-bolt.png" alt="New" style="width:16px;height:16px;vertical-align:middle;"> NEW RECORD</div>
+
+            <div class="results-buttons">
+                <button class="retry-btn" onclick="startGame()">[ Retry Trial ]</button>
+                <a href="home.html" class="home-btn">[ Return to Hub ]</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fallback chains for demo mode
+        const fallbackSpeedChains = [
+            {
+                question: 'What is 7 × 8?',
+                steps: [
+                    { text: 'I need to multiply 7 by 8.' },
+                    { text: '7 × 8 = 56' },
+                    { text: 'Let me verify: 7 × 8 is indeed 56.' },
+                    { text: 'The answer is 56.' }
+                ]
+            },
+            {
+                question: 'What is 25% of 40?',
+                steps: [
+                    { text: 'Find 25% of 40.' },
+                    { text: '25% = 1/4' },
+                    { text: '40 ÷ 4 = 10' },
+                    { text: 'Double-checking: 10 × 4 = 40. Correct!' },
+                    { text: 'The answer is 10.' }
+                ]
+            },
+            {
+                question: 'If x + 5 = 12, what is x?',
+                steps: [
+                    { text: 'Solve for x in x + 5 = 12.' },
+                    { text: 'Subtract 5 from both sides.' },
+                    { text: 'x = 12 - 5 = 7' },
+                    { text: 'Verify: 7 + 5 = 12. Yes!' },
+                    { text: 'x = 7' }
+                ]
+            },
+            {
+                question: 'What is 100 ÷ 4?',
+                steps: [
+                    { text: 'Divide 100 by 4.' },
+                    { text: '100 ÷ 4 = 25' },
+                    { text: 'Check: 25 × 4 = 100. Correct!' },
+                    { text: 'The answer is 25.' }
+                ]
+            },
+            {
+                question: 'What is 15 + 27?',
+                steps: [
+                    { text: 'Add 15 and 27.' },
+                    { text: '15 + 27 = 42' },
+                    { text: 'Let me recount: 15 + 27...' },
+                    { text: '15 + 20 = 35, plus 7 = 42' },
+                    { text: 'The answer is 42.' }
+                ]
+            }
+        ];
+
+        let timeLeft = 60;
+        let chainsJudged = 0;
+        let timerInterval = null;
+        let currentChain = null;
+        let selectedSteps = new Set();
+        let bestScore = 0;
+        let speedChainsFromDB = [];
+        let tickingSound = null;
+
+        async function loadBestScore() {
+            await ThinkTankApp.init();
+            const profile = await ThinkTankApp.getProfile();
+            if (profile) {
+                bestScore = profile.speed_best || profile.speedBest || 0;
+                document.getElementById('bestScore').textContent = bestScore + ' chains';
+            }
+
+            // Preload chains from Supabase
+            speedChainsFromDB = await ThinkTankApp.getChains('speed');
+        }
+
+        function startGame() {
+            ThinkTankAudio.click();
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('resultsScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+
+            timeLeft = 60;
+            chainsJudged = 0;
+            selectedSteps.clear();
+
+            document.getElementById('timerValue').textContent = timeLeft;
+            document.getElementById('chainsCount').textContent = chainsJudged;
+            document.getElementById('timer').classList.remove('warning');
+
+            loadNewChain();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timerValue').textContent = timeLeft;
+
+                if (timeLeft <= 10) {
+                    document.getElementById('timer').classList.add('warning');
+                }
+
+                // Start ticking sound at 8 seconds
+                if (timeLeft === 8 && !tickingSound) {
+                    tickingSound = ThinkTankAudio.startTicking();
+                }
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function loadNewChain() {
+            selectedSteps.clear();
+            // Use DB chains if available, otherwise fallback
+            const chains = speedChainsFromDB.length > 0 ? speedChainsFromDB : fallbackSpeedChains;
+            currentChain = chains[Math.floor(Math.random() * chains.length)];
+
+            let stepsHTML = '';
+            currentChain.steps.forEach((step, index) => {
+                stepsHTML += `
+                    <div class="quick-step" id="qstep-${index}" onclick="toggleQuickStep(${index})">
+                        <div class="quick-step-num">${String(index + 1).padStart(2, '0')}</div>
+                        <div class="quick-step-text">${step.text}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('gameContent').innerHTML = `
+                <div class="quick-question"><img src="assets/images/Research.png" alt="Question" class="question-icon-img"> ${currentChain.question}</div>
+                <div class="quick-steps">${stepsHTML}</div>
+            `;
+        }
+
+        function toggleQuickStep(index) {
+            ThinkTankAudio.click();
+            const el = document.getElementById(`qstep-${index}`);
+            if (selectedSteps.has(index)) {
+                selectedSteps.delete(index);
+                el.classList.remove('selected');
+            } else {
+                selectedSteps.add(index);
+                el.classList.add('selected');
+            }
+        }
+
+        async function submitQuick() {
+            ThinkTankAudio.click();
+
+            // Save judgment data (don't await to keep speed mode fast)
+            if (currentChain && currentChain.id) {
+                ThinkTankApp.submitJudgment({
+                    chainId: currentChain.id,
+                    flaggedSteps: Array.from(selectedSteps),
+                    totalSteps: currentChain.steps.length,
+                    mode: 'speed'
+                });
+            }
+
+            chainsJudged++;
+            document.getElementById('chainsCount').textContent = chainsJudged;
+            loadNewChain();
+        }
+
+        async function endGame() {
+            clearInterval(timerInterval);
+
+            // Stop ticking and play alarm
+            if (tickingSound) {
+                ThinkTankAudio.stop(tickingSound);
+                tickingSound = null;
+            }
+            ThinkTankAudio.alarm();
+
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('resultsScreen').style.display = 'block';
+
+            document.getElementById('finalScore').textContent = chainsJudged;
+
+            // Update best score via ThinkTankApp
+            const result = await ThinkTankApp.updateSpeedScore(chainsJudged);
+
+            if (result.isNewBest || chainsJudged > bestScore) {
+                bestScore = chainsJudged;
+                document.getElementById('newBest').style.display = 'inline-block';
+            } else {
+                document.getElementById('newBest').style.display = 'none';
+            }
+        }
+
+        loadBestScore();
+    </script>
+</body>
+</html>

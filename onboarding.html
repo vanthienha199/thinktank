@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThinkTank - Welcome</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/audio.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .icon-img {
+            width: 1em;
+            height: 1em;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+        .slide-icon-img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+        .feature-icon-img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+        }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        .onboarding-container {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            z-index: 1;
+        }
+        .skip-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: none;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: #00f0ff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            cursor: pointer;
+            padding: 8px 16px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+            z-index: 10;
+        }
+        .skip-btn:hover {
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+        .slides-viewport {
+            overflow: hidden;
+            width: 100%;
+        }
+        .slides-container {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+        .slide {
+            flex: 0 0 100%;
+            width: 100%;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .slide-icon {
+            font-size: 70px;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.5));
+        }
+        .slide-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #00f0ff;
+            margin-bottom: 12px;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+            letter-spacing: 2px;
+        }
+        .slide-desc {
+            font-size: 18px;
+            color: #aaa;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .slide-visual {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            padding: 20px;
+            margin-bottom: 30px;
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+        .example-step {
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            text-align: left;
+            font-size: 16px;
+            color: #ddd;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+        .example-step:last-child {
+            margin-bottom: 0;
+        }
+        .example-step.wasteful {
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid rgba(255, 51, 102, 0.4);
+        }
+        .example-step .badge {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            padding: 4px 10px;
+            font-weight: 600;
+            margin-left: auto;
+            letter-spacing: 1px;
+        }
+        .badge.useful {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid rgba(0, 255, 136, 0.4);
+            color: #00ff88;
+        }
+        .badge.wasteful {
+            background: rgba(255, 51, 102, 0.2);
+            border: 1px solid rgba(255, 51, 102, 0.4);
+            color: #ff3366;
+        }
+        .features-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px 0;
+        }
+        .feature {
+            text-align: center;
+        }
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 0 10px rgba(255, 0, 255, 0.5));
+        }
+        .feature-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            color: #a855f7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .impact-card {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 240, 255, 0.1) 100%);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 24px;
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+        .impact-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            color: #00ff88;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .impact-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 42px;
+            font-weight: 900;
+            color: #00ff88;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+            margin-bottom: 5px;
+        }
+        .impact-desc {
+            font-size: 15px;
+            color: #888;
+        }
+
+        /* Dots */
+        .dots {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            transition: all 0.3s;
+        }
+        .dot.active {
+            background: #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+            width: 30px;
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        .nav-btn {
+            flex: 1;
+            padding: 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .nav-btn.secondary {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #666;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+        .nav-btn.secondary:hover {
+            border-color: rgba(0, 240, 255, 0.3);
+            color: #00f0ff;
+            background: rgba(0, 240, 255, 0.05);
+        }
+        .nav-btn.primary {
+            background: transparent;
+            border: 2px solid #ff00ff;
+            color: #ff00ff;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .nav-btn.primary:hover {
+            background: rgba(255, 0, 255, 0.1);
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.4);
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
+        }
+
+        /* Desktop */
+        @media (min-width: 768px) {
+            .onboarding-container {
+                max-width: 550px;
+            }
+            .slide-icon {
+                font-size: 90px;
+            }
+            .slide-title {
+                font-size: 28px;
+            }
+            .slide-desc {
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="onboarding-container">
+        <button class="skip-btn" onclick="skipToSignup()">[ Skip ]</button>
+
+        <div class="slides-viewport">
+            <div class="slides-container" id="slidesContainer">
+                <!-- Slide 1 -->
+                <div class="slide">
+                    <div class="slide-icon"><img src="assets/images/Brain.png" alt="AI" class="slide-icon-img"></div>
+                    <h2 class="slide-title">// AI OVERTHINKS</h2>
+                    <p class="slide-desc">
+                        When AI solves problems, it sometimes does unnecessary steps - like checking the same thing twice or restating what it already knows.
+                    </p>
+                    <div class="slide-visual">
+                        <div class="example-step">
+                            <span>01</span> Calculate 2 + 2 = 4
+                            <span class="badge useful">USEFUL</span>
+                        </div>
+                        <div class="example-step wasteful">
+                            <span>02</span> Let me verify: 2 + 2 is indeed 4
+                            <span class="badge wasteful">WASTEFUL</span>
+                        </div>
+                        <div class="example-step wasteful">
+                            <span>03</span> Double-checking my arithmetic...
+                            <span class="badge wasteful">WASTEFUL</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2 -->
+                <div class="slide">
+                    <div class="slide-icon"><img src="assets/images/Target.png" alt="Mission" class="slide-icon-img"></div>
+                    <h2 class="slide-title">// YOUR MISSION</h2>
+                    <p class="slide-desc">
+                        Read AI reasoning chains and tap on the steps that are wasteful or unnecessary. It's like a puzzle game!
+                    </p>
+                    <div class="slide-visual">
+                        <div class="features-row">
+                            <div class="feature">
+                                <div class="feature-icon"><img src="assets/images/Point-icon.png" alt="Flag" class="feature-icon-img"></div>
+                                <div class="feature-text">Flag<br>Wasteful</div>
+                            </div>
+                            <div class="feature">
+                                <div class="feature-icon"><img src="assets/images/Star.png" alt="Earn" class="feature-icon-img"></div>
+                                <div class="feature-text">Earn<br>Credits</div>
+                            </div>
+                            <div class="feature">
+                                <div class="feature-icon"><img src="assets/images/Trophy.png" alt="Ranks" class="feature-icon-img"></div>
+                                <div class="feature-text">Climb<br>Ranks</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3 -->
+                <div class="slide">
+                    <div class="slide-icon"><img src="assets/images/Research.png" alt="Research" class="slide-icon-img"></div>
+                    <h2 class="slide-title">// HELP AI RESEARCH</h2>
+                    <p class="slide-desc">
+                        Your judgments help train AI to think more efficiently. You're contributing to real science!
+                    </p>
+                    <div class="slide-visual impact-card">
+                        <div class="impact-label">// Player Impact</div>
+                        <div class="impact-value">1,247</div>
+                        <div class="impact-desc">AI reasoning steps labeled by players</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dots">
+            <div class="dot active" id="dot0"></div>
+            <div class="dot" id="dot1"></div>
+            <div class="dot" id="dot2"></div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn secondary" id="backBtn" onclick="prevSlide()" style="display: none;">[ Back ]</button>
+            <button class="nav-btn primary" id="nextBtn" onclick="nextSlide()">[ Next ]</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 3;
+        let slideWidth = 0;
+
+        function initSlider() {
+            const viewport = document.querySelector('.slides-viewport');
+            slideWidth = viewport.offsetWidth;
+
+            // Set each slide to exact viewport width
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.style.width = slideWidth + 'px';
+                slide.style.flex = '0 0 ' + slideWidth + 'px';
+            });
+
+            updateSlide();
+        }
+
+        function updateSlide() {
+            document.getElementById('slidesContainer').style.transform = `translateX(-${currentSlide * slideWidth}px)`;
+
+            for (let i = 0; i < totalSlides; i++) {
+                document.getElementById(`dot${i}`).classList.toggle('active', i === currentSlide);
+            }
+
+            document.getElementById('backBtn').style.display = currentSlide === 0 ? 'none' : 'block';
+            document.getElementById('nextBtn').textContent = currentSlide === totalSlides - 1 ? "[ Initialize ]" : '[ Next ]';
+        }
+
+        function nextSlide() {
+            ThinkTankAudio.click();
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            } else {
+                window.location.href = 'signup.html';
+            }
+        }
+
+        function prevSlide() {
+            ThinkTankAudio.click();
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        function skipToSignup() {
+            ThinkTankAudio.click();
+            window.location.href = 'signup.html';
+        }
+
+        // Initialize on load
+        window.addEventListener('load', initSlider);
+        window.addEventListener('resize', initSlider);
+
+        // Also try to init immediately in case load already fired
+        if (document.readyState === 'complete') {
+            initSlider();
+        } else {
+            document.addEventListener('DOMContentLoaded', initSlider);
+        }
+    </script>
+</body>
+</html>
